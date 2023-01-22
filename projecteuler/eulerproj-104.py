@@ -31,7 +31,7 @@ def run_test():
         fibonacci.append(fibonacci[0] + fibonacci[1])
         c = fibonacci[2]
         fibonacci.pop(0)
-        if a > 329467:
+        if a > 300000:
             if pcbeg(c):
                 i = 1
         a += 1
