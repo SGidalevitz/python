@@ -14,3 +14,5 @@ def P(n,k):
 #Let F(k) be the kth Fibonacci number (with F(0) = 0 and F(1) = 1).
 
 #Find the sum of all S(F(k)) over 3 ≤ k ≤ 44
+
+#unsolved
