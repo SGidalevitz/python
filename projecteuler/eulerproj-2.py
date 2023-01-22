@@ -7,3 +7,4 @@ for x in fnumbers:
         fnumbers.remove(x)
     y = y + x
 print(y)
+#solved
