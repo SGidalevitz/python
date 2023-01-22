@@ -1,20 +1,31 @@
 import random
+import time
 board = [
     [0, 0, 0], 
     [0, 0, 0], 
     [0, 0, 0]]
+class style:
+   BOLD = '\033[1m'
+   END = '\033[0m'
+
 
 TTT_EMPTY = 0
 TTT_X = 1
 TTT_O = 2
-
+recents = []
 def place(xy, row, col):
     if board[row][col] == 0:
         board[row][col] = xy
+        if len(recents) > 1:
+            recents.append((board[row],board[col]))
+            recents.remove(recents[0])
+        else: 
+            recents.append((board[row],board[col]))
         return True
     else:
         return False
 class Player:
+    totalturns = 0
     symbol = TTT_EMPTY
     def __init__(self, sym):
         self.symbol = sym
@@ -68,42 +79,56 @@ def print_board():
             if board[i][x] == 0:
                 print(".", end="")
             if board[i][x] == 1:
-                print("X", end="")
+                if (board[i],board[x]) in recents:
+                    print(style.BOLD + "X" + style.END, end="")
+                else:
+                    print("X", end = "")
             if board[i][x] == 2:
-                print("Y", end="")
+                if (board[i],board[x]) in recents:
+                    print(style.BOLD + "O" + style.END, end="")
+                else:
+                    print("O", end = "")
             print(" ", end="")
         print()
 
 def run_game():
   while True:
-    if wincheck():
-        print("Congratulations! You Win!")
-        print_board()
+    if wincheck(TTT_O):
+        print("You lose.")
         exit()
+    elif player.totalturns > 8:
+        print("Draw.")
     player.turn()
-    if wincheck():
+    print_board()
+    player.totalturns += 1
+    if wincheck(TTT_X):
         print("Congratulations! You Win!")
-        print_board()
         exit()
+    elif player.totalturns > 8:
+        print("Draw.")
+        exit()
+    time.sleep(0.5)
+    print("_____")
     computer.turn()
     print_board()
+    player.totalturns += 1
     
 
-def wincheck():
-    if wincheck_row() or wincheck_column() or wincheck_diag_1() or wincheck_diag_2():
+def wincheck(symbol):
+    if wincheck_row(symbol) or wincheck_column(symbol) or wincheck_diag_1(symbol) or wincheck_diag_2(symbol):
         return True
-def wincheck_row():
+def wincheck_row(symbol):
     for i in range(3):
-        if board[i][0] == board[i][1] == board[i][2] and board[i][0] > 0:
+        if board[i][0] == board[i][1] == board[i][2] and board[i][0] == symbol:
             return True
-def wincheck_column():
+def wincheck_column(symbol):
     for i in range(3):    
-        if board[0][i] == board[1][i] == board[2][i] and board[0][i] > 0:
+        if board[0][i] == board[1][i] == board[2][i] and board[0][i] == symbol:
             return True
-def wincheck_diag_1():
-    return board[0][0] == board[1][1] == board[2][2] and board[0][0] > 0
-def wincheck_diag_2():
-    return board[2][0] == board[1][1] == board[0][2] and board[2][0] > 0
+def wincheck_diag_1(symbol):
+    return board[0][0] == board[1][1] == board[2][2] and board[0][0] == symbol
+def wincheck_diag_2(symbol):
+    return board[2][0] == board[1][1] == board[0][2] and board[2][0]== symbol
 
 
 
