@@ -17,7 +17,7 @@ class style:
     WHITE = "\033[37m"
     STRIKETHROUGH = "\033[9m"
 
-
+board_predict = board
 TTT_EMPTY = 0
 TTT_X = 1
 TTT_O = 2
@@ -39,24 +39,54 @@ class Player:
     def __init__(self, sym):
         self.symbol = sym
     def turn(self):
-        while True:
+        a = 0
+        while a == 0:
             pos = self.get_move_pos()
             if place(self.symbol, pos[0], pos[1]):
+                a = 1
                 break
             else:
                 print("This tile is already taken.")
             
 class Computer(Player):
     color = style.BLUE
+    
     def get_move_pos(self):
-        moves = []
-        randmoves = []
+        possiblemoves = []
+        movevalues = []
+        global board_predict
         for x in range(3):
             for y in range(3):
+                print(board[x][y])
                 if board[x][y] == 0:
-                    moves.append((x, y))
-        randmoves = moves[random.randrange(len(moves)-1)]
-        return randmoves
+                    possiblemoves.append((x, y))
+        print(board)
+        if len(possiblemoves) < 7:
+            for x in possiblemoves:
+                print(x)
+                board_predict = board.copy()
+                board_predict[x[0]][x[1]] = 2
+                if wincheck(TTT_O, True):
+                    #if the predicted board is winning then it has a higher value than if it isn't
+                    movevalues.append(1)
+                else:
+                    movevalues.append(0)
+                board_predict.clear()
+            print(movevalues)
+            print(possiblemoves)
+            pos = possiblemoves[movevalues.index(max(movevalues))]
+        else:
+            if (0,1) in possiblemoves:
+                pos = (0,1)
+            if (1,0) in possiblemoves:
+                pos = (1,0)
+            if (2,1) in possiblemoves:
+                pos = (2,1)
+            if (1,2) in possiblemoves:
+                pos = (1,2)
+        #prefers edge tiles over any others
+        return pos
+
     
     
 class Human(Player):
@@ -108,7 +138,7 @@ def print_board(player):
 
 def run_game():
   while True:
-    if wincheck(TTT_O):
+    if wincheck(TTT_O, False):
         print("You lose.")
         print_board(Computer)
         exit()
@@ -117,7 +147,7 @@ def run_game():
     player.turn()
     print_board(None)
     player.totalturns += 1
-    if wincheck(TTT_X):
+    if wincheck(TTT_X, False):
         print("Congratulations! You Win!")
         print_board(Human)
         exit()
@@ -128,33 +158,56 @@ def run_game():
     print("_____")
     computer.turn()
     print_board(None)
+    print(board)
     player.totalturns += 1
     
 
 winseq = []
-def wincheck(symbol):
-    if wincheck_row(symbol) or wincheck_column(symbol) or wincheck_diag_1(symbol) or wincheck_diag_2(symbol):
+def wincheck(symbol, predict):
+    if wincheck_row(symbol, predict) or wincheck_column(symbol, predict) or wincheck_diag_1(symbol, predict) or wincheck_diag_2(symbol, predict):
         return True
-def wincheck_row(symbol):
+    else:
+        return False
+def wincheck_row(symbol, predict):
     global winseq
+    if predict:
+        boardno = board_predict.copy()
+    else:
+        boardno = board.copy()
+    #Checks whether the wincheck is a normal wincheck or tied to the computer algo
     for i in range(3):
-        if board[i][0] == board[i][1] == board[i][2] and board[i][0] == symbol:
+        if (boardno[i][0] == boardno[i][1] == boardno[i][2]) and (boardno[i][0] == symbol):
             winseq = [(i, 0), (i, 1), (i, 2)]
             return True
-def wincheck_column(symbol):
+def wincheck_column(symbol, predict):
     global winseq
+    if predict:
+        boardno = board_predict
+    else:
+        boardno = board
+    #Checks whether the wincheck is a normal wincheck or tied to the computer algo
     for i in range(3):    
-        if board[0][i] == board[1][i] == board[2][i] and board[0][i] == symbol:
+        if (boardno[0][i] == boardno[1][i] == boardno[2][i]) and (boardno[0][i] == symbol):
             winseq = [(0, i), (1, i), (2, i)]
             return True
-def wincheck_diag_1(symbol):
+def wincheck_diag_1(symbol, predict):
     global winseq
-    if board[0][0] == board[1][1] == board[2][2] and board[0][0] == symbol:
+    if predict:
+        boardno = board_predict
+    else:
+        boardno = board
+    #Checks whether the wincheck is a normal wincheck or tied to the computer algo
+    if (boardno[0][0] == boardno[1][1] == boardno[2][2]) and (boardno[0][0] == symbol):
         winseq = [(0, 0), (1, 1), (2, 2)]
         return True
-def wincheck_diag_2(symbol):
+def wincheck_diag_2(symbol, predict):
     global winseq
-    if board[2][0] == board[1][1] == board[0][2] and board[2][0]== symbol:
+    if predict:
+        boardno = board_predict
+    else:
+        boardno = board
+    #Checks whether the wincheck is a normal wincheck or tied to the computer algo
+    if (boardno[2][0] == boardno[1][1] == boardno[0][2]) and (boardno[2][0] == symbol):
         winseq = [(2, 0), (1, 1), (0, 2)]
         return True
 
