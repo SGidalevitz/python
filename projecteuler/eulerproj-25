@@ -1,0 +1,9 @@
+fibonacci = [1,1]
+index = 0 
+while True:
+    index += 1
+    fibonacci.append(fibonacci[0] + fibonacci[1])
+    fibonacci.pop(0)
+    if len(str(fibonacci[1])) > 999:
+        print(index)
+        exit()
