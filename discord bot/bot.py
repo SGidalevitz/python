@@ -12,7 +12,9 @@ async def send_message(message, user_message, is_private):
         print(e)
 
 def run_discord_bot():
-    TOKEN = "MTA3MTIxMjI4MzczMDA3MTYwMg.GUGop_.4A6kCCkAFHTLssg3JBZx9AhnKzifr21eNh8QGU"
+    TOKEN = ""
+    with open("api.key", "r") as f:
+        TOKEN = f.read()
     intents = discord.Intents.default()
     intents.message_content = True
     client = discord.Client(intents=intents)
@@ -37,5 +39,10 @@ def run_discord_bot():
             await send_message(message, user_message, is_private=True)
         else:
             await send_message(message, user_message, is_private=False)
+    @client.event
+    async def on_member_join(member):
+        send_message('Hello, welcome to the server!')
 
     client.run(TOKEN)
+
+run_discord_bot()
