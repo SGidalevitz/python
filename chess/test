@@ -1,0 +1,4 @@
+check = list(input('Where would you like to go? (white)'))
+while not check[1].isnumeric() and check[3].isnumeric():
+    print('invalid move')
+    check = list(input('Where would you like to go? (white)'))

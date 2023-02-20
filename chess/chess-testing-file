@@ -1,0 +1,32 @@
+board = [[5, 2, 3, 4, 6, 3, 2, 5], [1, 1, 1, 1, 1, 1, 1, 1], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [7, 7, 7, 7, 7, 7, 7, 7], [11, 8, 9, 10, 12, 9, 8, 11]]
+pieceorder_fen_write = {
+    1: 'p',
+    2: 'n',
+    3: 'b',
+    4: 'q',
+    5: 'r',
+    6: 'k',
+    7: 'P',
+    8: 'N',
+    9: 'B',
+    10: 'Q',
+    11: 'R',
+    12: 'K'
+}
+def fen_write():
+    fen = ''
+    col_index = 0
+    for row in range(8):
+        for col in range(8):
+            if board[row][col] != 0:
+                if col_index > 0:
+                    fen += str(col_index)
+                fen += pieceorder_fen_write[board[row][col]]
+            else:
+                col_index += 1
+        if col_index > 0:
+            fen += str(col_index)
+        col_index = 0
+        fen += '/'
+    print(fen)
+fen_write()
