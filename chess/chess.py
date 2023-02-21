@@ -17,12 +17,12 @@ pieceorder = {
     4: '♛',
     5: '♜',
     6: '♚',
-    7: '♙',
-    8: '♘',
-    9: '♗',
-    10: '♕',
-    11: '♖',
-    12: '♔'
+    7: "♟",
+    8: "♞",
+    9: '♝',
+    10: '♛',
+    11: '♜',
+    12: '♚',
 }
 pieceorder_fen = {
 
@@ -40,7 +40,6 @@ pieceorder_fen = {
     'R': 11,
     'K': 12
 }    
-
 pieceorder_fen_write = {
     1: 'p',
     2: 'n',
@@ -55,7 +54,6 @@ pieceorder_fen_write = {
     11: 'R',
     12: 'K'
 }
-
 notationorder = {
     'a': 0,
     'b': 1,
@@ -78,6 +76,10 @@ class Piece():
     def get_moves(self):
         assert False, "dont use the base base class ya whippa snapper"
 allmoves = []
+
+class Empty(Piece):
+    def __init__(self):
+        self.type = 0
 class Pawn(Piece):
     def __init__(self, color, row, col):
         self.color = color
@@ -222,6 +224,8 @@ class Bishop(Piece):
             self.itery += 1
             iteration = 1
         iteration = 0
+
+
 class Queen(Piece):
     def __init__(self, color, row, col):
         self.color = color
@@ -367,6 +371,8 @@ class Queen(Piece):
             self.itery += 1
             iteration = 1
         iteration = 0
+
+
 class Rook(Piece):
     def __init__(self, color, row, col):
         self.color = color
@@ -441,6 +447,7 @@ class Rook(Piece):
             iteration = 1
         iteration = 0
 
+
 class King(Piece):
     def __init__(self, color, row, col):
         self.color = color
@@ -466,6 +473,7 @@ class King(Piece):
                 self.valid_moves.append((x,y))
         self.moves = self.valid_moves
 
+
 pieceorderreal = {
 1: (Pawn, 0),
 2: (Knight, 0),
@@ -482,31 +490,24 @@ pieceorderreal = {
 
 class ChessBoard():
     def __init__(self, FEN):
-        self.board = [[0 for col in range(8)] for row in range(8)]
-        self.fen_read(FEN)
-        self.create_objects()
-        
-        
-    def create_objects(self):
         self.boardarray = [[0 for col in range(8)] for row in range(8)]
+        self.create_objects(self.fen_read(FEN))
         
-        for row in range(8):
-            for col in range(8):
-                if self.board[row][col] != 0:
-                    piecetype = self.board[row][col]
-                    piece_type = pieceorderreal[piecetype][0]
-                    piece_color = pieceorderreal[piecetype][1]
-                    self.boardarray[7 - row][col] = piece_type(piece_color, 7 - row, col)
-    def create_theoretical_objects(self, board):
-        self.theoretical_board = [[0 for col in range(8)] for row in range(8)]
+        
+    def create_objects(self, board, store_board=None):
+        if store_board == None:
+            store_board = self.boardarray
         for row in range(8):
             for col in range(8):
                 if board[row][col] != 0:
                     piecetype = board[row][col]
                     piece_type = pieceorderreal[piecetype][0]
                     piece_color = pieceorderreal[piecetype][1]
-                    self.theoretical_board[7 - row][col] = piece_type(piece_color, 7 - row, col)
-    def fen_read(self, FEN):
+                    store_board[7 - row][col] = piece_type(piece_color, 7 - row, col)
+                else:
+                    store_board[7-row][col] = Empty()
+    def fen_read(self, FEN): 
+        self.board = [[0 for i in range(8)] for i in range(8)]
         fen_board_andvars = FEN.split(' ')
         fen_split = fen_board_andvars[0].split('/')
         for row in range(8):
@@ -516,7 +517,7 @@ class ChessBoard():
                 if col.isdigit():
                     col_index += int(col)
                 elif col.lower() in ['p', 'n', 'b', 'r', 'q', 'k']:
-                    self.set_piece(row, col_index, pieceorder_fen[col])
+                    self.board[row][col_index] = pieceorder_fen[col]
                     col_index += 1
         self.to_move = {'w': WHITE_PIECE, 'b': BLACK_PIECE}[fen_board_andvars[1]]
         self.castling_rights = fen_board_andvars[2]
@@ -527,22 +528,23 @@ class ChessBoard():
             self.en_passant_next_move = True
         self.halfmove_clock_since_event = int(fen_board_andvars[4])
         self.fullmove_clock = int(fen_board_andvars[5])
+        return self.board
     def fen_write(self):
         fen = ''
         col_index = 0
         for row in range(8):
             for col in range(8):
-                if self.board[row][col] != 0:
+                if self.boardarray[row][col].type != 0:
                     if col_index > 0:
                         fen += str(col_index)
-                    fen += pieceorder_fen_write[self.board[row][col]]
+                    fen += pieceorder_fen_write[self.boardarray[row][col].type]
                 else:
                     col_index += 1
             if col_index > 0:
                 fen += str(col_index)
             col_index = 0
             fen += '/'
-        
+        return fen
         
 
 
@@ -555,10 +557,10 @@ class ChessBoard():
         #If the piece is a pawn, note pawns have special capturing rules
         if self.boardarray[7-posy][posx].type == 1 or self.boardarray[7-posy][posx].type == 7:
             for (x,y) in self.boardarray[7 - posy][posx].moves:
-                if self.board[7-y][x] == 0:
+                if self.boardarray[7-y][x].type == 0:
                     self.valid_moves.append((x,y))
             for (x,y) in self.boardarray[7-posy][posx].captures:
-                if self.boardarray[7-y][x] != 0:
+                if self.boardarray[7-y][x].type != 0:
                     if self.boardarray[7-y][x].color != self.boardarray[7-posy][posx].color:
                         self.valid_moves.append((x,y))
                 else: 
@@ -568,7 +570,7 @@ class ChessBoard():
                         self.en_passant_next_move = True
         else:
             for (x,y) in self.boardarray[7 - posy][posx].moves:
-                if self.board[7-y][x] == 0 or self.boardarray[7-y][x].color != self.boardarray[7-posy][posx].color:
+                if self.boardarray[7-y][x].type == 0 or self.boardarray[7-y][x].color != self.boardarray[7-posy][posx].color:
                         self.valid_moves.append((x,y))
         return True
     def isvalid(self, des_posx, des_posy, valid_moves):
@@ -576,36 +578,34 @@ class ChessBoard():
             return True
         else:
             return False   
-    def make_move(self, posx, posy, des_posx, des_posy, en_passant):
+    def make_move(self, posx, posy, des_posx, des_posy):
         if self.boardarray[7-posy][posx].type == 1:
             if ((des_posx, des_posy) == self.en_passant_ts) and self.en_passant_next_move:
-                self.boardarray[8 - self.en_passant_ts[1]][self.en_passant_ts[0]] = 0
-                self.board[8 - self.en_passant_ts[1]][self.en_passant_ts[0]] = 0
+                self.boardarray[8 - self.en_passant_ts[1]][self.en_passant_ts[0]].type = 0
         elif self.boardarray[7-posy][posx].type == 7:
             if ((des_posx, des_posy) == self.en_passant_ts) and self.en_passant_next_move:
-                self.boardarray[6 - self.en_passant_ts[1]][self.en_passant_ts[0]] = 0
-                self.board[6 - self.en_passant_ts[1]][self.en_passant_ts[0]] = 0
+                self.boardarray[6 - self.en_passant_ts[1]][self.en_passant_ts[0]].type = 0
     
         self.boardarray[7 - posy][posx].posx = des_posx
         self.boardarray[7 - posy][posx].posy = des_posy
-        self.board[7 - posy][posx] = 0
-        self.board[7 - des_posy][des_posx] = self.boardarray[7 - posy][posx].type
         self.boardarray[7 - des_posy][des_posx] = deepcopy(self.boardarray[7 - posy][posx])
-        self.boardarray[7 - posy][posx] = 0
-    def make_move_theoretical(self, posx, posy, des_posx, des_posy)         
-    def move_white(self):
-        check = list(input('Where would you like to go? (white)'))
+        self.boardarray[7 - posy][posx].type = 0
+    def make_move_theoretical(self, posx, posy, des_posx, des_posy):
+        pass         
+    def turn(self, color):
+        color_str = 'white' if color == WHITE_PIECE else 'black'
+        check = list(input(f'Where would you like to go? ({color_str})'))
         if len(check) == 4:
             if not (check[1].isnumeric() and check[3].isnumeric()):
                 print('invalid move')
-                self.move_white()
+                self.turn(color)
                 return
             else:
                 check[1] = int(check[1])
                 check[3] = int(check[3])
             if not (check[0] in notationorder.keys() and check[1] >= 1 and check[1] <= 8 and check[2] in notationorder.keys() and check[3] >= 1 and check[3] <= 8):
                 print('invalid move')
-                self.move_white()
+                self.turn(color)
                 return
             posx = notationorder[check[0]]
             posy = int(check[1]) - 1
@@ -613,101 +613,42 @@ class ChessBoard():
             des_posy = int(check[3]) - 1
             if not self.cut_down_options(posx, posy):
                 print('no piece there')
-                self.move_white()
+                self.turn(color)
                 return
             if not self.isvalid(des_posx, des_posy, self.valid_moves):
                 print('invalid move')
-                self.move_white()
+                self.turn(color)
                 return
             self.cut_down_options(posx, posy)
             if not self.boardarray[7 - posy][posx].color == self.to_move:
                 print('it not cho turn dumbass')
-                self.move_white()
+                self.turn(color)
                 return
             if (des_posy - posy == 2) and (self.boardarray[7-posy][posx].type == 1 or self.boardarray[7-posy][posx].type == 7):
                 self.en_passant_ts = (posx, posy + 1)
-            self.make_move(posx, posy, des_posx, des_posy, ...)
-            
+            self.make_move(posx, posy, des_posx, des_posy)
         elif len(check) == 2:
             if not check[1].isnumeric():
                 print('invalid move')
-                self.move_white()
+                self.turn(color)
                 return
             check[1] = int(check[1])   
             if not ((check[0] in notationorder.keys()) and 1 <= check[1] <= 8):
                 print('invalid move')
-                self.move_white()
+                self.turn(color)
                 return
             posx = notationorder[check[0]]
             posy = int(check[1]) - 1
             if self.cut_down_options(posx, posy) == False:
                 print('no piece there')
-                self.move_white()
+                self.turn(color)
                 return
             self.display_possible_moves(self.valid_moves)
-            self.move_white()      
+            self.turn(color)      
         else: 
-            print('invalid move')
-            self.move_white()
+            print('invalid move (limit input to exactly 2 or 4 characters)')
+            self.turn(color)
             return
-    def move_black(self):
-        check = list(input('Where would you like to go? (black)'))
-        if len(check) == 4:
-            if not (check[1].isnumeric() and check[3].isnumeric()):
-                print('invalid move')
-                self.move_black()
-                return
-            else:
-                check[1] = int(check[1])
-                check[3] = int(check[3])
-            if not (check[0] in notationorder.keys() and check[1] >= 1 and check[1] <= 8 and check[2] in notationorder.keys() and check[3] >= 1 and check[3] <= 8):
-                print('invalid move')
-                self.move_black()
-                return
-            posx = notationorder[check[0]]
-            posy = int(check[1]) - 1
-            des_posx = notationorder[check[2]]
-            des_posy = int(check[3]) - 1
-            if self.cut_down_options(posx, posy) == False:
-                print('no piece there')
-                self.move_black()
-                return
-            if not self.isvalid(des_posx, des_posy, self.valid_moves):
-                print('invalid move')
-                self.move_black()
-                return
-            self.cut_down_options(posx, posy)
-            if not self.boardarray[7 - posy][posx].color == self.to_move:
-                print('it not cho turn dumbass')
-                self.move_black()
-                return
-            if (posy - des_posy == 2) and (self.boardarray[7-posy][posx].type == 1 or self.boardarray[7-posy][posx].type == 7):
-                self.en_passant_ts = (posx, posy - 1)
-
-            self.make_move(posx, posy, des_posx, des_posy, ...)
-        elif len(check) == 2:
-            if not check[1].isnumeric():
-                print('invalid move')
-                self.move_black()
-                return
-            check[1] = int(check[1])   
-            if not ((check[0] in notationorder.keys()) and 1 <= check[1] <= 8):
-                print('invalid move')
-                self.move_black()
-                return
-            posx = notationorder[check[0]]
-            posy = int(check[1]) - 1
-            if not self.cut_down_options(posx, posy):
-                print('no piece there')
-                self.move_black()
-                return
-            self.display_possible_moves(self.valid_moves)
-            self.move_black() 
-        else: 
-            print('invalid move')
-            self.move_black()
-            return
-
 
     def on_move(self, color):
         self.to_move = 1 - color
@@ -716,11 +657,6 @@ class ChessBoard():
         if self.en_passant_next_move:
             self.en_passant_next_move = False
 
-    def set_piece(self, row, col, value):
-        self.board[row][col] = value
-        
-    def get_piece(self, row, col):
-        return self.board[row][col]
     running = True
 
     def en_passant_cycle(self, move):
@@ -731,14 +667,14 @@ class ChessBoard():
         for row in range(8):
             currentrow = ''
             for col in range(8):
-                if self.boardarray[row][col] != 0:
+                if self.boardarray[row][col].type != 0:
                     if self.boardarray[row][col].color == BLACK_PIECE:  
                         colorstr = "\033[35m" 
                     elif self.boardarray[row][col].color == WHITE_PIECE: 
                         colorstr = "\033[36m"
                 else: colorstr  = ''
                 #7 is the start of the black piece index #s
-                currentrow += (colorstr + str(pieceorder[self.board[row][col]]) + '\033[0m')
+                currentrow += (colorstr + str(pieceorder[self.boardarray[row][col].type]) + '\033[0m')
                 currentrow += ' '
             print(currentrow)
     def display_possible_moves(self, valid_moves):
@@ -752,7 +688,7 @@ class ChessBoard():
             currentrow = ''
             for col in range(8):
                 
-                if self.boardarray[row][col] != 0:
+                if self.boardarray[row][col].type != 0:
                     if self.boardarray[row][col].color == BLACK_PIECE:  
                         colorstr = "\033[35m" 
                     elif self.boardarray[row][col].color == WHITE_PIECE: 
@@ -763,7 +699,7 @@ class ChessBoard():
                     colorstr = "\033[31m"
                 
                 #7 is the start of the black piece index #s
-                currentrow += (colorstr + str(pieceorder[self.board[row][col]]) + '\033[0m')
+                currentrow += (colorstr + str(pieceorder[self.boardarray[row][col].type]) + '\033[0m')
                 currentrow += ' '
             print(currentrow)
     #note this checks for if the color passed through as an argument is in check    
@@ -792,11 +728,10 @@ class ChessBoard():
 
 def game_loop():
     while True:
-        board.move_white()
+        board.turn(WHITE_PIECE)
         board.on_move(WHITE_PIECE)
-       
         board.display()
-        board.move_black()
+        board.turn(BLACK_PIECE)
         board.on_move(BLACK_PIECE)
         board.display()
 
@@ -844,3 +779,4 @@ def game_loop():
 board = ChessBoard('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1')
 board.display()
 game_loop()
+
