@@ -1,0 +1,28 @@
+import random
+import time
+alltrials = []
+start_time = time.time()
+def testtrials(numtrials, trials, ph, pt):
+    global alltrials
+    totaln = 0
+    for i in range(numtrials):
+        n = 0
+        for i in range(trials):
+            if random.random() < ph:
+                n += 1
+            else:
+                n -= 1
+            if n == 1:
+                totaln += 1
+                break
+    alltrials.append(totaln / numtrials)
+    return (str(totaln * 100 / numtrials) + '%')
+counter = 0
+while counter < 450:
+    print(testtrials(10000,1000,0.1,0.9))
+    print(time.time() - start_time)
+    print(counter)
+    counter += 1
+print('final: ' + str((sum(alltrials) * 100 / len(alltrials))) + '%')
+    
+            
