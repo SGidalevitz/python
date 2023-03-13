@@ -1,0 +1,67 @@
+import random
+import time
+
+class Cell:
+    def __init__(self):
+        self.alive = random.randint(0, 1)
+        self.next_state = None
+        self.neighbors = None
+        
+def init_game(x, y):
+    global length
+    global height
+    global board
+    board = [[Cell() for i in range(x)] for j in range(y)]
+    length = x
+    height = y
+    
+def tick():
+    for row in range(height):
+        for col in range(length):
+            topleft, topmiddle, topright, middleleft, middleright, bottomleft, bottommiddle, bottomright = 0, 0, 0, 0, 0, 0, 0, 0
+            if row > 0 and col > 0:
+                topleft = board[row - 1][col - 1].alive
+            if row > 0:
+                topmiddle = board[row - 1][col].alive
+            if row > 0 and col < (length - 1):
+                topright = board[row - 1][col + 1].alive
+            if col > 0:
+                middleleft = board[row][col - 1].alive
+            if col < (length - 1):
+                middleright = board[row][col + 1].alive
+            if row < (height - 1) and col > 0:
+                bottomleft = board[row + 1][col - 1].alive
+            if row < (height - 1):
+                bottommiddle = board[row + 1][col].alive
+            if row < (height - 1) and col < (length - 1):
+                bottomright = board[row + 1][col + 1].alive
+            board[row][col].neighbors = topleft + topmiddle + topright + middleleft + middleright + bottomleft + bottommiddle + bottomright
+            if board[row][col].alive == 1:
+                if board[row][col].neighbors == 2 or board[row][col].neighbors == 3:
+                    board[row][col].next_state = 1
+                else:
+                    board[row][col].next_state = 0
+            else:
+                if board[row][col].neighbors == 3:
+                    board[row][col].next_state = 1
+                else:
+                    board[row][col].next_state = 0
+    for row in range(height):
+        for col in range(length):
+            board[row][col].alive = board[row][col].next_state
+                
+def print_board():
+    for row in range(height):
+        currentrow = ''
+        for col in range(length):
+            currentrow += str(board[row][col].alive)
+        print(currentrow)
+
+def game_loop(x, y):
+    init_game(x, y)
+    while True:
+        print_board()
+        tick()
+        input()
+
+game_loop(16, 16)
