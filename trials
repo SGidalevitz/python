@@ -1,5 +1,6 @@
 import random
 import time
+import matplotlib as pl
 alltrials = []
 start_time = time.time()
 def testtrials(numtrials, trials, ph, pt):
@@ -18,11 +19,15 @@ def testtrials(numtrials, trials, ph, pt):
     alltrials.append(totaln / numtrials)
     return (str(totaln * 100 / numtrials) + '%')
 counter = 0
-while counter < 450:
-    print(testtrials(10000,1000,0.1,0.9))
-    print(time.time() - start_time)
+x_values = []
+y_values = []
+while counter < 150:
+    x_values.append(testtrials(10000,1000,0.1,0.9))
+    y_values.append(time.time() - start_time)
+
     print(counter)
     counter += 1
 print('final: ' + str((sum(alltrials) * 100 / len(alltrials))) + '%')
-    
+pl.plot(x_values, y_values)
+pl.show
             
