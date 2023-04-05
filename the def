@@ -1,0 +1,22 @@
+while True:
+    x = input('give number')
+    try:
+        x = int(x)
+    except:
+        print('not int')
+    else:
+        break
+string = ''
+for i in range(x):
+   
+    string += str(i + 1) + ' '
+    print(string)
+
+print()
+print()
+print()
+for i in range(10):
+    string = ''
+    for j in range(10):
+        string += str((i + 1) * (j + 1)) + ' '
+    print(string)

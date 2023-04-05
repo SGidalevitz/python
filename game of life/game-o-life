@@ -60,31 +60,15 @@ def tick():
         for col in range(length):
             board[row][col].alive = board[row][col].next_state
                 
-import shutil
-
 def print_board():
-    term_width, _ = shutil.get_terminal_size()
-    cell_width = len('\033[44m \033[0m')
-    board_width = length * cell_width
-    max_cols = min(length, term_width // cell_width)
-    num_cols = min(max_cols, length)
-    num_rows = (length - 1) // max_cols + 1
     for row in range(height):
-        for sub_row in range(num_rows):
-            currentrow = ''
-            start_col = sub_row * max_cols
-            end_col = min(start_col + num_cols, length)
-            for col in range(start_col, end_col):
-                if board[row][col].alive == 0:
-                    currentrow += '\033[44m' + ' ' + '\033[0m'
-                else:
-                    currentrow += '\033[41m' + ' ' + '\033[0m'
-            print(currentrow, end='')
-        print()
-
-
-
-
+        currentrow = ''
+        for col in range(length):
+            if board[row][col].alive == 0:
+                currentrow += '\033[44m' + ' ' + '\033[0m'
+            else:
+                currentrow += '\033[41m' + ' ' + '\033[0m'
+        print(currentrow)
 
 
 def stringify(arrangement):
@@ -96,11 +80,7 @@ def stringify(arrangement):
     return stringified[:-1]  # Remove the final newline character
 
 def parse(stringified):
-    rows = stringified.split('\r\n')
-    if len(rows) == 1:
-        rows = stringified.split('\n')
-    if len(rows) == 1:
-        rows = stringified.split('\r')
+    rows = stringified.split('\n')
     arrangement = []
     for row in rows:
         if row:
@@ -108,7 +88,6 @@ def parse(stringified):
             row_arrangement = [Cell() for cell in cells if cell]
             arrangement.append(row_arrangement)
     return arrangement
-
 
 def save_to_file(filename):
     with open(filename, 'w') as file:
@@ -118,23 +97,11 @@ def load_from_file(filename):
     with open(filename, 'r') as file:
         stringified = file.read()
     return parse(stringified)
-
 def game_loop(x, y):
     init_game(x, y)
     while True:
-        try:
-            print_board()
-            tick()
-            input()
-        except KeyboardInterrupt:
-            break
+        print_board()
+        tick()
+        #input()
 
-
-filename = 'glider-gun.txt'
-if filename:
-    init_game(None, None, filename)
-else:
-    init_game(16, 16)
-game_loop(length, height)
-
-
+game_loop(16, 16)
